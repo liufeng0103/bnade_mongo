@@ -87,7 +87,7 @@ public class HttpClient {
 		try {
 			logger.debug("reliableGet获取{}内容", url);
 			content = get(url);			
-		} catch (IOException e) {
+		} catch (Exception e) {
 			try {
 				if (try_count++ < MAX_TRY_COUNT) {
 					if (try_count == 1) {

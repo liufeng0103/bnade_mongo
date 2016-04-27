@@ -1,5 +1,7 @@
 package com.bnade.wow.catcher;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -8,12 +10,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bnade.util.BnadeProperties;
+import com.bnade.util.TimeUtil;
 import com.bnade.wow.client.WowClient;
 import com.bnade.wow.client.WowClientException;
 import com.bnade.wow.client.model.AuctionDataFile;
 import com.bnade.wow.client.model.JAuction;
 import com.bnade.wow.po.Realm;
+import com.bnade.wow.service.AuctionDataService;
+import com.bnade.wow.service.AuctionMinBuyoutDataService;
+import com.bnade.wow.service.AuctionMinBuyoutHistoryDataService;
 import com.bnade.wow.service.RealmService;
+import com.bnade.wow.service.impl.AuctionDataServiceImpl;
+import com.bnade.wow.service.impl.AuctionMinBuyoutDataServiceImpl;
+import com.bnade.wow.service.impl.AuctionMinBuyoutHistoryDataServiceImpl;
 import com.bnade.wow.service.impl.RealmServiceImpl;
 
 /**
@@ -46,56 +55,84 @@ public class AuctionDataExtractingTask implements Runnable {
 	private boolean isComplete;
 	private WowClient wowClient;
 	private RealmService realmService;
+	private AuctionDataService auctionDataService;
+	private AuctionMinBuyoutDataService auctionMinBuyoutDataService;
+	private AuctionMinBuyoutHistoryDataService auctionMinBuyoutHistoryDataService;
+	private AuctionDataProcessor auctionDataProcessor;
 	
-
 	public AuctionDataExtractingTask(String realmName) {
 		this.realmName = realmName;
 		wowClient = new WowClient();
 		realmService = new RealmServiceImpl();
+		auctionDataService = new AuctionDataServiceImpl();
+		auctionMinBuyoutDataService = new AuctionMinBuyoutDataServiceImpl();
+		auctionMinBuyoutHistoryDataService = new AuctionMinBuyoutHistoryDataServiceImpl();
+		auctionDataProcessor = new AuctionDataProcessor();
 	}
 
-	public void process(String realmName) throws CatcherException {
+	public void process() throws CatcherException, IOException, SQLException {
 		if (realmName == null || "".equals(realmName)) {
 			throw new CatcherException("要处理的服务器名为空");
-		}
-		addInfo("开始运行");
+		}		
 		Realm realm = realmService.getByName(realmName);
 		if (realm != null) {
 			long interval = BnadeProperties.getTask1Interval();
 			if (System.currentTimeMillis() - realm.getLastModified() > interval) {
+				List<JAuction> auctions = null;
 				try {
+					addInfo("通过api获取拍卖行数据文件信息");
 					AuctionDataFile auctionDataFile = wowClient.getAuctionDataFile(realmName);
+					addInfo("拍卖行数据文件信息获取完毕");
 					if (auctionDataFile.getLastModified() != realm.getLastModified()) {
-						List<JAuction> auctions = wowClient.getAuctionData(auctionDataFile.getUrl());
+						addInfo("开始下载拍卖行数据");
+						auctions = wowClient.getAuctionData(auctionDataFile.getUrl());
+						addInfo("拍卖行数据下载完毕");
 					} else {
 						addInfo("数据更新时间{}与api获取的更新时间一样，不更新", new Date(realm.getLastModified()));
 					}
 				} catch (WowClientException e) {
 					addInfo("获取拍卖行数据文件信息api不好用，使用数据库中的url下载数据文件");
-					List<JAuction> auctions = wowClient.getAuctionData(realm.getUrl());
-				}
-				
+					addInfo("开始下载拍卖行数据");
+					auctions = wowClient.getAuctionData(realm.getUrl());
+					addInfo("拍卖行数据下载完毕");
+				} 
+				auctionDataProcessor.process(auctions);
+				if (auctionDataProcessor.getMaxAucId() != realm.getMaxAucId()) {
+					// 1. 保存所有数据		
+					addInfo("保存拍卖行数据");
+					auctionDataService.save(auctions, realm.getId());
+					addInfo("保存拍卖行数据完毕");
+					// 更新服务器拍卖状态信息到t_realm
+					// 2. 保存所有最低一口价数据
+					List<JAuction> minBuyoutAuctions = auctionDataProcessor.getMinBuyoutAuctions();
+					addInfo("一共有{}种最低价物品", minBuyoutAuctions.size());
+					addInfo("保存拍卖行最低一口价数据");
+					auctionMinBuyoutDataService.save(minBuyoutAuctions, realm.getId());
+					addInfo("保存拍卖行最低一口价数据完毕");
+					// 3. 保存所有最低一口价数据到历史表
+					addInfo("保存拍卖行最低一口价数据到历史表");
+					auctionMinBuyoutHistoryDataService.save(minBuyoutAuctions, realm.getId());
+					addInfo("保存拍卖行最低一口价数据到历史表完毕");
+				} else {
+					addInfo("最大的拍卖id{}跟数据库的一样，不更新", realm.getMaxAucId());
+				}				
 			} else {
 				addInfo("上次更新时间{}，未超过设定的更新间隔时间{}，不更新", new Date(realm.getLastModified()), interval);
 			}
 		} else {
 			addError("未添加到t_realm表");
 		}
-		try {
-			int a = new Random().nextInt(3);
-			logger.info("{}sleep {} 秒", realmName, a);
-			Thread.sleep(1000 * a);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
 	public void run() {
 		try {
-			process(realmName);
+			long start = System.currentTimeMillis();
+			addInfo("开始");
+			process();
 			isComplete = true;
-		} catch (CatcherException e) {
+			addInfo("完成，用时：" + TimeUtil.format(System.currentTimeMillis() - start));
+		} catch (CatcherException | IOException | SQLException e) {
 			addError("运行出错：" + e.getMessage());
 			e.printStackTrace();
 		}
@@ -121,4 +158,7 @@ public class AuctionDataExtractingTask implements Runnable {
 		return realmName;
 	}
 
+	public static void main(String[] args) throws Exception {
+		new AuctionDataExtractingTask("古尔丹").process();
+	}
 }
