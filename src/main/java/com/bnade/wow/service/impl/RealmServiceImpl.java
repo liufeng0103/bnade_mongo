@@ -25,4 +25,9 @@ public class RealmServiceImpl implements RealmService {
 		return realmDao.save(realm);
 	}
 
+	@Override
+	public int update(Realm realm) throws SQLException {		
+		return realmDao.update(realm);
+	}
+
 }

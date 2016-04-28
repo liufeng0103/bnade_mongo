@@ -29,4 +29,11 @@ public class RealmDaoImpl implements RealmDao {
 				realm.getAuctionQuantity(), realm.getPlayerQuantity(), realm.getItemQuantity(),
 				System.currentTimeMillis());
 	}
+
+	@Override
+	public int update(Realm realm) throws SQLException {		
+		return run.update("update t_realm set url=?,lastModified=?,maxAucId=?,auctionQuantity=?,playerQuantity=?,itemQuantity=?,lastUpdateTime=? where name=?",
+				realm.getUrl(), realm.getLastModified(), realm.getMaxAucId(), realm.getAuctionQuantity(),
+				realm.getPlayerQuantity(), realm.getItemQuantity(), System.currentTimeMillis(), realm.getName());
+	}
 }

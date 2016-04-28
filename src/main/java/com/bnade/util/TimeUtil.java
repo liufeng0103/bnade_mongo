@@ -1,5 +1,8 @@
 package com.bnade.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class TimeUtil {
 	public static final long SECOND = 1000;
 	public static final long MINUTE = 60 * SECOND;
@@ -37,5 +40,18 @@ public class TimeUtil {
 			sb.append("毫秒");
 		}
 		return sb.toString();
+	}
+	
+	/**
+	 * 返回当天日期
+	 * @return
+	 */
+	public static String getDay() {
+		SimpleDateFormat sf = new SimpleDateFormat("MMdd");
+		return sf.format(new Date());
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(TimeUtil.getDay());
 	}
 }

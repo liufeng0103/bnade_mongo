@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,7 @@ import com.bnade.wow.service.impl.RealmServiceImpl;
  * 2. 读取配置文件，服务器的更新时间间隔
  * 3. 如果上一次的更新时间没有超过设置的时间间隔，则退出task
  * 4. 否则通过api获取服务器的拍卖行数据更新时间以及数据文件地址
- * 5. 如果api可用
+ * 5. 如果api可用	
  *   1. 读取api上数据更新时间和数据库中的时间比较，如果一样则退出task
  *   2. 否则，根据数据文件地址下载数据
  *   3. 更新服务器状态表，更新数据更新时间以及文件下载路径
@@ -50,8 +49,9 @@ import com.bnade.wow.service.impl.RealmServiceImpl;
 public class AuctionDataExtractingTask implements Runnable {
 
 	private static Logger logger = LoggerFactory.getLogger(AuctionDataExtractingTask.class);
-
+	
 	private String realmName;
+	private String logHeader;
 	private boolean isComplete;
 	private WowClient wowClient;
 	private RealmService realmService;
@@ -62,6 +62,7 @@ public class AuctionDataExtractingTask implements Runnable {
 	
 	public AuctionDataExtractingTask(String realmName) {
 		this.realmName = realmName;
+		logHeader = "服务器[" + realmName + "]";
 		wowClient = new WowClient();
 		realmService = new RealmServiceImpl();
 		auctionDataService = new AuctionDataServiceImpl();
@@ -86,7 +87,10 @@ public class AuctionDataExtractingTask implements Runnable {
 					if (auctionDataFile.getLastModified() != realm.getLastModified()) {
 						addInfo("开始下载拍卖行数据");
 						auctions = wowClient.getAuctionData(auctionDataFile.getUrl());
-						addInfo("拍卖行数据下载完毕");
+						addInfo("拍卖行数据下载完毕,共{}条数据", auctions.size());
+						// 更新realm状态信息
+						realm.setUrl(auctionDataFile.getUrl());
+						realm.setLastModified(auctionDataFile.getLastModified());
 					} else {
 						addInfo("数据更新时间{}与api获取的更新时间一样，不更新", new Date(realm.getLastModified()));
 					}
@@ -94,30 +98,36 @@ public class AuctionDataExtractingTask implements Runnable {
 					addInfo("获取拍卖行数据文件信息api不好用，使用数据库中的url下载数据文件");
 					addInfo("开始下载拍卖行数据");
 					auctions = wowClient.getAuctionData(realm.getUrl());
-					addInfo("拍卖行数据下载完毕");
+					addInfo("拍卖行数据下载完毕,共{}条数据", auctions.size());
+					// 更新realm状态信息
+					realm.setLastModified(System.currentTimeMillis());
 				} 
 				auctionDataProcessor.process(auctions);
 				if (auctionDataProcessor.getMaxAucId() != realm.getMaxAucId()) {
 					// 1. 保存所有数据		
-					addInfo("保存拍卖行数据");
+					addInfo("开始保存{}条拍卖行数据", auctions.size());
 					auctionDataService.save(auctions, realm.getId());
-					addInfo("保存拍卖行数据完毕");
-					// 更新服务器拍卖状态信息到t_realm
+					addInfo("保存{}条拍卖行数据完毕", auctions.size());
 					// 2. 保存所有最低一口价数据
 					List<JAuction> minBuyoutAuctions = auctionDataProcessor.getMinBuyoutAuctions();
-					addInfo("一共有{}种最低价物品", minBuyoutAuctions.size());
-					addInfo("保存拍卖行最低一口价数据");
+					// 更新服务器拍卖状态信息到t_realm
+					realm.setMaxAucId(auctionDataProcessor.getMaxAucId());
+					realm.setAuctionQuantity(auctions.size());
+					realm.setPlayerQuantity(auctionDataProcessor.getPlayerQuantity());
+					realm.setItemQuantity(minBuyoutAuctions.size());					
+					addInfo("拍卖数据文件信息更新{}条记录完毕", realmService.update(realm));
+					addInfo("开始保存{}条拍卖行最低一口价数据", minBuyoutAuctions.size());
 					auctionMinBuyoutDataService.save(minBuyoutAuctions, realm.getId());
-					addInfo("保存拍卖行最低一口价数据完毕");
+					addInfo("保存{}条拍卖行最低一口价数据完毕", minBuyoutAuctions.size());
 					// 3. 保存所有最低一口价数据到历史表
-					addInfo("保存拍卖行最低一口价数据到历史表");
+					addInfo("开始保存{}条拍卖行最低一口价数据到历史表", minBuyoutAuctions.size());
 					auctionMinBuyoutHistoryDataService.save(minBuyoutAuctions, realm.getId());
-					addInfo("保存拍卖行最低一口价数据到历史表完毕");
+					addInfo("保存{}条拍卖行最低一口价数据到历史表完毕", minBuyoutAuctions.size());
 				} else {
 					addInfo("最大的拍卖id{}跟数据库的一样，不更新", realm.getMaxAucId());
 				}				
 			} else {
-				addInfo("上次更新时间{}，未超过设定的更新间隔时间{}，不更新", new Date(realm.getLastModified()), interval);
+				addInfo("上次更新时间{}，未超过设定的更新间隔时间{}，不更新", new Date(realm.getLastModified()), TimeUtil.format(interval));
 			}
 		} else {
 			addError("未添加到t_realm表");
@@ -139,15 +149,15 @@ public class AuctionDataExtractingTask implements Runnable {
 	}
 
 	private void addInfo(String msg, Object... arguments) {
-		logger.info("服务器[{}]" + msg, realmName, arguments);;
+		logger.info(logHeader + msg, arguments);;
 	}
 	
 	private void addError(String msg, Object... arguments) {
-		logger.error("服务器[{}]" + msg, realmName, arguments);;
+		logger.error(logHeader + msg, arguments);;
 	}
 	
 	private void addDebug(String msg, Object... arguments) {
-		logger.debug("服务器[{}]" + msg, realmName, arguments);;
+		logger.debug(logHeader + msg, arguments);;
 	}
 	
 	public boolean isComplete() {

@@ -36,7 +36,7 @@ public class AuctionDataProcessor {
 			}
 			players.add(auction.getOwner());
 			if (auction.getBuyout() != 0) {
-				String key = auction.getItem() + auction.getPetSpeciesId() + auction.getPetBreedId() + auction.getBonusLists();
+				String key = "" + auction.getItem() + auction.getPetSpeciesId() + auction.getPetBreedId() + auction.getBonusLists();
 				JAuction minBuyoutAuction = minByoutAuctions.get(key);
 				if (minBuyoutAuction == null) {
 					minByoutAuctions.put(key, auction);
