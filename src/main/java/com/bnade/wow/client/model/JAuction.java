@@ -20,6 +20,7 @@ public class JAuction {
 	private int petBreedId;
 	private int context;
 	private List<Bonus> bonusLists;
+	private String bonusList;
 
 	public int getAuc() {
 		return auc;
@@ -134,22 +135,22 @@ public class JAuction {
 	}
 
 	public String getBonusLists() {
-		StringBuffer sb = new StringBuffer();
-		if (bonusLists != null) {
-			Collections.sort(bonusLists);
-			for (Bonus b : bonusLists) {
-				if (Bonus.bonusIds.contains(b.getBonusListId())) {
-					if (sb.length() > 0) {
-						sb.append(",");
+		if (bonusList == null) {
+			StringBuffer sb = new StringBuffer();
+			if (bonusLists != null) {
+				Collections.sort(bonusLists);
+				for (Bonus b : bonusLists) {
+					if (Bonus.bonusIds.contains(b.getBonusListId())) {
+						if (sb.length() > 0) {
+							sb.append(",");
+						}
+						sb.append(b.getBonusListId());
 					}
-					sb.append(b.getBonusListId());
 				}
 			}
-			// if("".equals(sb.toString())){
-			// System.out.println(bonusLists);
-			// }
-		}
-		return sb.toString();
+			bonusList = sb.toString();
+		}		
+		return bonusList;
 	}
 
 	public void setBonusLists(List<Bonus> bonusLists) {

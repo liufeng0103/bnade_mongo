@@ -43,6 +43,7 @@ public class WowClient {
 		String url = HOST + AUCTION_DATA + realmName + APIKEY;
 		String json = null;
 		try {
+			httpClient.resetTryCount();
 			 json = httpClient.reliableGet(url);
 		} catch (Exception e) {
 			throw new WowClientException();
@@ -57,6 +58,7 @@ public class WowClient {
 	 * @throws IOException
 	 */
 	public List<JAuction> getAuctionData(String url) throws IOException {
+		httpClient.resetTryCount();
 		String json = httpClient.reliableGet(url);
 		return gson.fromJson(json, JAuctions.class).getAuctions();
 	}

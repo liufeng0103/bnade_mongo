@@ -2,9 +2,9 @@ package com.bnade.wow.service.impl;
 
 import java.util.List;
 
-import com.bnade.wow.client.model.JAuction;
 import com.bnade.wow.dao.AuctionDataDao;
 import com.bnade.wow.dao.impl.AuctionDataDaoImpl;
+import com.bnade.wow.po.Auction;
 import com.bnade.wow.service.AuctionDataService;
 
 public class AuctionDataServiceImpl implements AuctionDataService {
@@ -21,10 +21,16 @@ public class AuctionDataServiceImpl implements AuctionDataService {
 	 * drop完之后添加需要的索引然后保存数到数据库
 	 */
 	@Override
-	public void save(List<JAuction> auctionData, int realmId) {
+	public void save(List<Auction> auctionData, int realmId) {
 		auctionDataDao.drop(realmId);
 		auctionDataDao.ensureIndex(realmId);
 		auctionDataDao.save(auctionData, realmId);		
+	}
+
+	@Override
+	public List<Auction> get(int itemId, String bounsList) {
+		
+		return null;
 	}
 
 }

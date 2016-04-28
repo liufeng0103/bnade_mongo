@@ -1,6 +1,7 @@
 package com.bnade.util;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class TimeUtil {
@@ -51,7 +52,20 @@ public class TimeUtil {
 		return sf.format(new Date());
 	}
 	
+	/**
+	 * 返回比当天差i天的日期
+	 * @return
+	 */
+	public static String getDay(int i) {
+		SimpleDateFormat sf = new SimpleDateFormat("MMdd");
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.DATE, i);
+		return sf.format(cal.getTime());
+	}
+	
 	public static void main(String[] args) {
 		System.out.println(TimeUtil.getDay());
+		System.out.println(TimeUtil.getDay(-1));
 	}
 }

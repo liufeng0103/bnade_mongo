@@ -5,9 +5,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bnade.wow.client.model.JAuction;
 import com.bnade.wow.dao.AuctionMinBuyoutDataDao;
 import com.bnade.wow.dao.impl.AuctionMinBuyoutDataDaoImpl;
+import com.bnade.wow.po.Auction;
 import com.bnade.wow.service.AuctionMinBuyoutDataService;
 
 public class AuctionMinBuyoutDataServiceImpl implements AuctionMinBuyoutDataService {
@@ -21,9 +21,14 @@ public class AuctionMinBuyoutDataServiceImpl implements AuctionMinBuyoutDataServ
 	}
 
 	@Override
-	public void save(List<JAuction> auctionData, int realmId) {
-		auctionMinBuyoutDataDao.deleteAll(realmId);		
-		auctionMinBuyoutDataDao.save(auctionData, realmId);		
+	public void save(List<Auction> auctionData, int realmId) {
+		auctionMinBuyoutDataDao.deleteAll(realmId);
+		auctionMinBuyoutDataDao.save(auctionData);		
+	}
+
+	@Override
+	public List<Auction> getByItemIdAndBounsList(int itemId, String bounsList) {
+		return auctionMinBuyoutDataDao.getByItemIdAndBounsList(itemId, bounsList);
 	}
 
 }
