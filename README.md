@@ -3,6 +3,9 @@
 ## 项目介绍
 网站www.bnade.com用于魔兽世界拍卖行相关数据的查询和分析，这个计划重写整个[项目](https://github.com/liufeng0103/bnade-old)的前后端以及后台爬虫程序，数据库从MySQL迁移到MongoDB
 
+## Wiki
+[Wiki](https://github.com/liufeng0103/bnade/wiki/BNADE-Wiki)保存网站相关的文档
+
 ## 网站功能：
 - 物品在所有服务器的最低价
 - 物品在某个服务器的历史价格
@@ -27,6 +30,22 @@
 6. 运行WowTokenExtractingTask.java, 如果能获取并保存时光徽章信息到MongoDB则安装完成
 
 环境搭建写的比较简洁，如果你看到了，有不明白的地方可以告诉我，我想对此写个详细的教程
+
+## 目录结构说明
+- catcher  
+后台爬虫程序
+- client  
+通过战网api获取数据
+- dao  
+数据库操作
+- service  
+所有程序通过service获取和操作数据
+- po  
+数据库映射
+- rs  
+Restful api
+- util  
+工具类
 
 
 
