@@ -1,11 +1,14 @@
 package com.bnade.wow.dao;
 
-import java.util.List;
 
-import com.bnade.wow.client.model.JAuction;
-
+/**
+ * 把每天的数据按每天4个时段计算后保存到历史表，对该历史表的操作
+ * 
+ * @author liufeng0103
+ *
+ */
 public interface AuctionMinBuyoutHistoryDataDao {
 
-	void save(List<JAuction> auctionData, int realmId);
+	
 	
 }

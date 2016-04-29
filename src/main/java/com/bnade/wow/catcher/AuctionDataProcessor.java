@@ -37,12 +37,23 @@ public class AuctionDataProcessor {
 			players.add(auction.getOwner());
 			if (auction.getBuyout() != 0) {
 				String key = "" + auction.getItem() + auction.getPetSpeciesId() + auction.getPetBreedId() + auction.getBonusLists();
+				
+				// 计算单价
+				long buyout = auction.getBuyout();
+				int quantity = auction.getQuantity();
+				auction.setBuyout(buyout/quantity);
+
 				JAuction minBuyoutAuction = minByoutAuctions.get(key);
 				if (minBuyoutAuction == null) {
 					minByoutAuctions.put(key, auction);
 				} else if (minBuyoutAuction.getBuyout() > auction.getBuyout()) {
-					minBuyoutAuction = auction;
-				}
+					// 计算总数量
+					auction.setQuantity(auction.getQuantity() + minBuyoutAuction.getQuantity());
+					minByoutAuctions.put(key, auction);
+				} else {
+					// 计算总数量
+					minBuyoutAuction.setQuantity(auction.getQuantity() + minBuyoutAuction.getQuantity());				
+				} 
 			}			
 		}
 	}

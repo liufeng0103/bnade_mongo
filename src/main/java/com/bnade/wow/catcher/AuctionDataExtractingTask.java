@@ -2,6 +2,7 @@ package com.bnade.wow.catcher;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -14,14 +15,15 @@ import com.bnade.wow.client.WowClient;
 import com.bnade.wow.client.WowClientException;
 import com.bnade.wow.client.model.AuctionDataFile;
 import com.bnade.wow.client.model.JAuction;
+import com.bnade.wow.po.Auction;
 import com.bnade.wow.po.Realm;
 import com.bnade.wow.service.AuctionDataService;
+import com.bnade.wow.service.AuctionMinBuyoutDailyDataService;
 import com.bnade.wow.service.AuctionMinBuyoutDataService;
-import com.bnade.wow.service.AuctionMinBuyoutHistoryDataService;
 import com.bnade.wow.service.RealmService;
 import com.bnade.wow.service.impl.AuctionDataServiceImpl;
+import com.bnade.wow.service.impl.AuctionMinBuyoutDailyDataServiceImpl;
 import com.bnade.wow.service.impl.AuctionMinBuyoutDataServiceImpl;
-import com.bnade.wow.service.impl.AuctionMinBuyoutHistoryDataServiceImpl;
 import com.bnade.wow.service.impl.RealmServiceImpl;
 
 /**
@@ -57,7 +59,7 @@ public class AuctionDataExtractingTask implements Runnable {
 	private RealmService realmService;
 	private AuctionDataService auctionDataService;
 	private AuctionMinBuyoutDataService auctionMinBuyoutDataService;
-	private AuctionMinBuyoutHistoryDataService auctionMinBuyoutHistoryDataService;
+	private AuctionMinBuyoutDailyDataService auctionMinBuyoutDailyDataService;
 	private AuctionDataProcessor auctionDataProcessor;
 	
 	public AuctionDataExtractingTask(String realmName) {
@@ -67,7 +69,7 @@ public class AuctionDataExtractingTask implements Runnable {
 		realmService = new RealmServiceImpl();
 		auctionDataService = new AuctionDataServiceImpl();
 		auctionMinBuyoutDataService = new AuctionMinBuyoutDataServiceImpl();
-		auctionMinBuyoutHistoryDataService = new AuctionMinBuyoutHistoryDataServiceImpl();
+		auctionMinBuyoutDailyDataService = new AuctionMinBuyoutDailyDataServiceImpl();
 		auctionDataProcessor = new AuctionDataProcessor();
 	}
 
@@ -105,8 +107,10 @@ public class AuctionDataExtractingTask implements Runnable {
 				auctionDataProcessor.process(auctions);
 				if (auctionDataProcessor.getMaxAucId() != realm.getMaxAucId()) {
 					// 1. 保存所有数据		
+					List<Auction> tmpAucs = new ArrayList<>();
+					copy(auctions, tmpAucs, realm.getId(), realm.getLastModified());
 					addInfo("开始保存{}条拍卖行数据", auctions.size());
-					auctionDataService.save(auctions, realm.getId());
+					auctionDataService.save(tmpAucs, realm.getId());
 					addInfo("保存{}条拍卖行数据完毕", auctions.size());
 					// 2. 保存所有最低一口价数据
 					List<JAuction> minBuyoutAuctions = auctionDataProcessor.getMinBuyoutAuctions();
@@ -116,13 +120,15 @@ public class AuctionDataExtractingTask implements Runnable {
 					realm.setPlayerQuantity(auctionDataProcessor.getPlayerQuantity());
 					realm.setItemQuantity(minBuyoutAuctions.size());					
 					addInfo("拍卖数据文件信息更新{}条记录完毕", realmService.update(realm));
-					addInfo("开始保存{}条拍卖行最低一口价数据", minBuyoutAuctions.size());
-					auctionMinBuyoutDataService.save(minBuyoutAuctions, realm.getId());
-					addInfo("保存{}条拍卖行最低一口价数据完毕", minBuyoutAuctions.size());
+					tmpAucs = new ArrayList<>();
+					copy(minBuyoutAuctions, tmpAucs, realm.getId(), realm.getLastModified());
+					addInfo("开始保存{}条拍卖行最低一口价数据", tmpAucs.size());
+					auctionMinBuyoutDataService.save(tmpAucs, realm.getId());
+					addInfo("保存{}条拍卖行最低一口价数据完毕", tmpAucs.size());
 					// 3. 保存所有最低一口价数据到历史表
-					addInfo("开始保存{}条拍卖行最低一口价数据到历史表", minBuyoutAuctions.size());
-					auctionMinBuyoutHistoryDataService.save(minBuyoutAuctions, realm.getId());
-					addInfo("保存{}条拍卖行最低一口价数据到历史表完毕", minBuyoutAuctions.size());
+					addInfo("开始保存{}条拍卖行最低一口价数据到历史表", tmpAucs.size());
+					auctionMinBuyoutDailyDataService.save(tmpAucs, realm.getId());
+					addInfo("保存{}条拍卖行最低一口价数据到历史表完毕", tmpAucs.size());
 				} else {
 					addInfo("最大的拍卖id{}跟数据库的一样，不更新", realm.getMaxAucId());
 				}				
@@ -156,8 +162,32 @@ public class AuctionDataExtractingTask implements Runnable {
 		logger.error(logHeader + msg, arguments);;
 	}
 	
-	private void addDebug(String msg, Object... arguments) {
-		logger.debug(logHeader + msg, arguments);;
+//	private void addDebug(String msg, Object... arguments) {
+//		logger.debug(logHeader + msg, arguments);;
+//	}
+	
+	private void copy(List<JAuction> jAucs, List<Auction> aucs, int realmId, long lastModified) {
+		for (JAuction jAuc : jAucs) {
+			Auction auc = new Auction();
+			auc.setAuc(jAuc.getAuc());
+			auc.setItem(jAuc.getItem());
+			auc.setOwner(jAuc.getOwner());
+			auc.setOwnerRealm(jAuc.getOwnerRealm());
+			auc.setBid(jAuc.getBid());
+			auc.setBuyout(jAuc.getBuyout());
+			auc.setQuantity(jAuc.getQuantity());
+			auc.setTimeLeft(jAuc.getTimeLeft());
+			auc.setRand(jAuc.getRand());
+			auc.setSeed(jAuc.getSeed());
+			auc.setPetSpeciesId(jAuc.getPetSpeciesId());
+			auc.setPetLevel(jAuc.getPetLevel());
+			auc.setPetBreedId(jAuc.getPetBreedId());
+			auc.setContext(jAuc.getContext());
+			auc.setBonusLists(jAuc.getBonusLists());
+			auc.setRealmId(realmId);
+			auc.setLastModifed(lastModified);
+			aucs.add(auc);
+		}
 	}
 	
 	public boolean isComplete() {

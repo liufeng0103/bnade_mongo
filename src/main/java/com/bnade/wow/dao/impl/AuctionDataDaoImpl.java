@@ -6,8 +6,8 @@ import java.util.List;
 import org.bson.Document;
 
 import com.bnade.util.MongoUtil;
-import com.bnade.wow.client.model.JAuction;
 import com.bnade.wow.dao.AuctionDataDao;
+import com.bnade.wow.po.Auction;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexModel;
 
@@ -23,10 +23,10 @@ public class AuctionDataDaoImpl implements AuctionDataDao {
 	}
 	
 	@Override
-	public void save(List<JAuction> auctionData, int realmId) {
+	public void save(List<Auction> auctionData, int realmId) {
 		MongoCollection<Document> collection = MongoUtil.getWowDB().getCollection(COLLECTION_NAME_PREFIX + realmId);
 		List<Document> docs = new ArrayList<Document>();
-		for (JAuction auc : auctionData) {
+		for (Auction auc : auctionData) {
 			Document doc = new Document("auc", auc.getAuc())
 					.append("item", auc.getItem())
 					.append("owner", auc.getOwner())
@@ -41,7 +41,8 @@ public class AuctionDataDaoImpl implements AuctionDataDao {
 					.append("petLevel", auc.getPetLevel())
 					.append("petBreedId", auc.getPetBreedId())
 					.append("context", auc.getContext())
-					.append("bonusLists", auc.getBonusLists());
+					.append("bonusLists", auc.getBonusLists())
+					.append("lastModifed", auc.getLastModifed());
 			docs.add(doc);
 		}
 		collection.insertMany(docs);

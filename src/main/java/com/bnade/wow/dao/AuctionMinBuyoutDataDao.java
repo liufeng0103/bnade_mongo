@@ -2,11 +2,20 @@ package com.bnade.wow.dao;
 
 import java.util.List;
 
-import com.bnade.wow.client.model.JAuction;
+import com.bnade.wow.po.Auction;
 
+/**
+ * 所有服务器最新的物品最低一口价数据的操作
+ * 
+ * @author liufeng0103
+ *
+ */
 public interface AuctionMinBuyoutDataDao {
 
-	void save(List<JAuction> auctionData, int realmId);
+	void save(List<Auction> auctionData);
 	
 	void deleteAll(int realmId);
+	
+	List<Auction> getByItemIdAndBounsList(int itemId, String bounsList);
+	
 }

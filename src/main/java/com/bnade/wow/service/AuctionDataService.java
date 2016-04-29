@@ -2,7 +2,7 @@ package com.bnade.wow.service;
 
 import java.util.List;
 
-import com.bnade.wow.client.model.JAuction;
+import com.bnade.wow.po.Auction;
 
 /**
  * 拍卖行所有拍卖数据的操作
@@ -12,5 +12,7 @@ import com.bnade.wow.client.model.JAuction;
  */
 public interface AuctionDataService {
 
-	void save(List<JAuction> auctionData, int realmId);
+	void save(List<Auction> auctionData, int realmId);
+	
+	List<Auction> get(int itemId, String bounsList);
 }

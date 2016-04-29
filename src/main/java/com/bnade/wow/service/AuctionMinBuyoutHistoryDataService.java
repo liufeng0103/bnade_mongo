@@ -2,10 +2,10 @@ package com.bnade.wow.service;
 
 import java.util.List;
 
-import com.bnade.wow.client.model.JAuction;
+import com.bnade.wow.po.Auction;
 
 public interface AuctionMinBuyoutHistoryDataService {
 
-	void save(List<JAuction> auctionData, int realmId);
+	
 	
 }
