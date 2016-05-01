@@ -32,6 +32,8 @@ public class TaskRunner {
 	
 	private static Logger logger = LoggerFactory.getLogger(TaskRunner.class);	
 	
+	private static final long WAIT_TIME = 1000 * 60;
+	
 	private File shutdownFile = new File("shutdown");
 
 	public boolean isShutdown() {		
@@ -89,9 +91,9 @@ public class TaskRunner {
 				pool.shutdown();
 				while(true) {
 					if (!pool.isTerminated()) {
-						logger.info("线程没有结束，等待10秒");
+						logger.info("有任务线程没有结束，等待{}", TimeUtil.format(WAIT_TIME));
 						try {
-							Thread.sleep(10000);
+							Thread.sleep(WAIT_TIME);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -101,7 +103,7 @@ public class TaskRunner {
 							logger.info("关闭TaskRunner");		
 							System.exit(0);
 						} else {
-							logger.info("线程结束, 重新启动TaskRunner");
+							logger.info("重新启动TaskRunner");
 							break;
 						}
 					}
