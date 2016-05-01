@@ -66,23 +66,20 @@ public class AuctionDataArchivingTask {
 			throw new CatcherException("要处理的服务器名为空");
 		}	
 		logHeader = "服务器[" + realmName + "]";
-		addInfo("开始归档{}的数据", realmName, handleDate);
+		addInfo("开始归档{}的数据", handleDate);
 		Realm realm = realmService.getByName(realmName);		
 		ArchivedTask taskStatus = new ArchivedTask(realm.getId(), handleDate);
 		if(taskStatusDao.getArchivedTask(taskStatus) == null) {
-			addInfo("开始获取{}的数据", realmName, handleDate);
+			addInfo("开始获取{}的数据", handleDate);
 			List<Auction> aucs = auctionMinBuyoutDailyDataService.get(handleDate, realm.getId());
 			if (aucs.size() > 0) {
-				addInfo("获取{}的数据完毕, 共{}条", realmName, aucs.size());
+				addInfo("获取数据完毕, 共{}条", aucs.size());
 				try {
 					List<HistoryAuction> result = auctionDataArchivingProcessor.process(aucs, handleDate);
 					addInfo("数据分析完毕共{}条", result.size());	
 					int year = TimeUtil.getYear(TimeUtil.parse(handleDate));
 					addInfo("把数据归档到{}年的集合", year);	
 					auctionMinBuyoutHistoryDataService.save(result, realm.getId(), year);
-					addInfo("开始删除{}的集合", realmName, handleDate);
-					auctionMinBuyoutDailyDataService.drop(handleDate, realm.getId());
-					addInfo("删除{}的集合完毕", realmName, handleDate);
 					taskStatusDao.addArchivedTask(taskStatus);
 					addInfo("数据添加为已归档", handleDate);
 				} catch (ParseException e) {
@@ -96,6 +93,19 @@ public class AuctionDataArchivingTask {
 			addInfo("已处理过");
 		}
 		addInfo("完毕");
+	}
+	
+	public void clean(String realmName, String handleDate) throws SQLException {
+		logHeader = "服务器[" + realmName + "]";
+		Realm realm = realmService.getByName(realmName);		
+		ArchivedTask taskStatus = new ArchivedTask(realm.getId(), handleDate);
+		if(taskStatusDao.getArchivedTask(taskStatus) != null) {
+			addInfo("开始删除{}的集合", handleDate);
+			auctionMinBuyoutDailyDataService.drop(handleDate, realm.getId());
+			addInfo("删除{}的集合完毕", handleDate);
+		} else {
+			addError("未归档过{}的数据或数据不存在", handleDate);
+		}		
 	}
 	
 	private void addInfo(String msg, Object... arguments) {
@@ -118,8 +128,10 @@ public class AuctionDataArchivingTask {
 			AuctionDataArchivingTask task = new AuctionDataArchivingTask();
 			List<String> realmNames = FileUtil.fileLineToList("realmlist.txt");
 			String handleDate = TimeUtil.getDate(-1);
+			String cleanDate = TimeUtil.getDate(-2);
 			for (String realmName : realmNames) {
 				task.process(realmName, handleDate);
+				task.clean(realmName, cleanDate);
 				if (task.isShutdown()) {
 					logger.info("准备退出，当前运行服务器[{}]", realmName);
 					break;
