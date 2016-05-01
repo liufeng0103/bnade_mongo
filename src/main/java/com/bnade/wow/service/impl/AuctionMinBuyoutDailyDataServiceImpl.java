@@ -24,8 +24,18 @@ public class AuctionMinBuyoutDailyDataServiceImpl implements AuctionMinBuyoutDai
 	@Override
 	public List<Auction> getPast(int itemId, String bounsList, int realmId) {
 		// 获取2天的数据
-		List<Auction> aucs = auctionMinBuyoutDailyDataDao.get(itemId, bounsList, TimeUtil.getDay(-1), realmId);
-		aucs.addAll(auctionMinBuyoutDailyDataDao.get(itemId, bounsList, TimeUtil.getDay(), realmId));
+		List<Auction> aucs = auctionMinBuyoutDailyDataDao.get(itemId, bounsList, TimeUtil.getDate(-1), realmId);
+		aucs.addAll(auctionMinBuyoutDailyDataDao.get(itemId, bounsList, TimeUtil.getDate(), realmId));
 		return aucs;
+	}
+
+	@Override
+	public List<Auction> get(String day, int realmId) {		
+		return auctionMinBuyoutDailyDataDao.get(day, realmId);
+	}
+
+	@Override
+	public void drop(String day, int realmId) {
+		auctionMinBuyoutDailyDataDao.drop(day, realmId);		
 	}
 }
