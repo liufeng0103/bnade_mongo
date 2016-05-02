@@ -21,4 +21,19 @@ public interface AuctionMinBuyoutDailyDataDao {
 	 */
 	List<Auction> get(int itemId, String bounsList, String day, int realmId);
 	
+	/**
+	 * 获取服务器某天的所有记录
+	 * @param day
+	 * @param realmId
+	 * @return
+	 */
+	List<Auction> get(String day, int realmId);
+	
+	/**
+	 * 删除服务器某天的集合
+	 * @param day
+	 * @param realmId
+	 * @return
+	 */
+	void drop(String day, int realmId);
 }

@@ -1,10 +1,14 @@
 package com.bnade.util;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 public class TimeUtil {
+	
+	private static SimpleDateFormat sf = new SimpleDateFormat("yyyyMMdd");
+	
 	public static final long SECOND = 1000;
 	public static final long MINUTE = 60 * SECOND;
 	public static final long HOUR = 60 * MINUTE;
@@ -47,8 +51,7 @@ public class TimeUtil {
 	 * 返回当天日期
 	 * @return
 	 */
-	public static String getDay() {
-		SimpleDateFormat sf = new SimpleDateFormat("MMdd");
+	public static String getDate() {		
 		return sf.format(new Date());
 	}
 	
@@ -56,16 +59,31 @@ public class TimeUtil {
 	 * 返回比当天差i天的日期
 	 * @return
 	 */
-	public static String getDay(int i) {
-		SimpleDateFormat sf = new SimpleDateFormat("MMdd");
+	public static String getDate(int i) {		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
 		cal.add(Calendar.DATE, i);
 		return sf.format(cal.getTime());
 	}
 	
-	public static void main(String[] args) {
-		System.out.println(TimeUtil.getDay());
-		System.out.println(TimeUtil.getDay(-1));
+	/**
+	 * 返回比当天差i天的日期
+	 * @return
+	 */
+	public static int getYear(Date date) {	
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);			
+		return cal.get(Calendar.YEAR);	
+	}
+	
+	public static Date parse(String date) throws ParseException {
+		return sf.parse(date);			
+	}
+	
+	public static void main(String[] args) throws ParseException {
+		System.out.println(TimeUtil.getDate());
+		System.out.println(TimeUtil.getDate(-1));
+		System.out.println(TimeUtil.parse("20160512"));	
+		System.out.println(TimeUtil.getYear(new Date()));
 	}
 }

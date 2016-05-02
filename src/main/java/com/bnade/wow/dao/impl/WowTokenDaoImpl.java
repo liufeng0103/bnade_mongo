@@ -22,7 +22,7 @@ import com.mongodb.client.MongoCollection;
  */
 public class WowTokenDaoImpl implements WowTokenDao {
 
-	private static final String WOWTOKEN_COLLECTION_NAME = "wowtoken";
+	private static final String COLLECTION_NAME = "wowtoken";
 	
 	private static Logger logger = LoggerFactory.getLogger(WowTokenDaoImpl.class);
 
@@ -30,7 +30,7 @@ public class WowTokenDaoImpl implements WowTokenDao {
 
 	public WowTokenDaoImpl() {
 		collection = MongoUtil.getWowDB().getCollection(
-				WOWTOKEN_COLLECTION_NAME);
+				COLLECTION_NAME);
 	}
 
 	@Override

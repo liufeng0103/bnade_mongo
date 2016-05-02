@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 # 获取时光徽章信息
-LOG_FILE=task3.log
+LOG_FILE=wowtoken.log
 
 now=$(date +"%Y-%m-%d-%H.%M.%S")
 

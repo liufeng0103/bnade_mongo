@@ -87,20 +87,25 @@ public class AuctionDataExtractingTask implements Runnable {
 					AuctionDataFile auctionDataFile = wowClient.getAuctionDataFile(realmName);
 					addInfo("拍卖行数据文件信息获取完毕");
 					if (auctionDataFile.getLastModified() != realm.getLastModified()) {
+						addInfo("2次更新间隔{}", TimeUtil.format(auctionDataFile.getLastModified() - realm.getLastModified()));
 						addInfo("开始下载拍卖行数据");
+						long start = System.currentTimeMillis();
 						auctions = wowClient.getAuctionData(auctionDataFile.getUrl());
-						addInfo("拍卖行数据下载完毕,共{}条数据", auctions.size());
+						addInfo("拍卖行数据下载完毕,共{}条数据用时{}", auctions.size(), TimeUtil.format(System.currentTimeMillis() - start));
 						// 更新realm状态信息
 						realm.setUrl(auctionDataFile.getUrl());
 						realm.setLastModified(auctionDataFile.getLastModified());
 					} else {
 						addInfo("数据更新时间{}与api获取的更新时间一样，不更新", new Date(realm.getLastModified()));
+						return;
 					}
 				} catch (WowClientException e) {
 					addInfo("获取拍卖行数据文件信息api不好用，使用数据库中的url下载数据文件");
-					addInfo("开始下载拍卖行数据");
+					long start = System.currentTimeMillis();
+					addInfo("2次更新间隔{}", TimeUtil.format(start - realm.getLastModified()));
+					addInfo("开始下载拍卖行数据");					
 					auctions = wowClient.getAuctionData(realm.getUrl());
-					addInfo("拍卖行数据下载完毕,共{}条数据", auctions.size());
+					addInfo("拍卖行数据下载完毕,共{}条数据用时{}", auctions.size(), TimeUtil.format(System.currentTimeMillis() - start));
 					// 更新realm状态信息
 					realm.setLastModified(System.currentTimeMillis());
 				} 
@@ -155,11 +160,11 @@ public class AuctionDataExtractingTask implements Runnable {
 	}
 
 	private void addInfo(String msg, Object... arguments) {
-		logger.info(logHeader + msg, arguments);;
+		logger.info(logHeader + msg, arguments);
 	}
 	
 	private void addError(String msg, Object... arguments) {
-		logger.error(logHeader + msg, arguments);;
+		logger.error(logHeader + msg, arguments);
 	}
 	
 //	private void addDebug(String msg, Object... arguments) {

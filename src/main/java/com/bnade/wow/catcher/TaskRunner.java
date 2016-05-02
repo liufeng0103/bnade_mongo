@@ -31,11 +31,22 @@ import com.bnade.util.TimeUtil;
 public class TaskRunner {
 	
 	private static Logger logger = LoggerFactory.getLogger(TaskRunner.class);	
+	// 是否所有线程运行完毕的检查间隔时间
+	private static final long CHECK_WAIT_TIME = 10000;
+	// 2次运行直接的等待时间
+	private static final long WAIT_TIME = 1000 * 60;
 	
 	private File shutdownFile = new File("shutdown");
+	private File runningFile = new File("running");
 
 	public boolean isShutdown() {		
 		return shutdownFile.exists();
+	}
+	
+	private void exit() {
+		runningFile.deleteOnExit();
+		logger.info("关闭TaskRunner");		
+		System.exit(0);
 	}
 	
 	public void launch() {
@@ -89,19 +100,24 @@ public class TaskRunner {
 				pool.shutdown();
 				while(true) {
 					if (!pool.isTerminated()) {
-						logger.info("线程没有结束，等待10秒");
+						logger.info("有任务线程没有结束，等待{}", TimeUtil.format(CHECK_WAIT_TIME ));
 						try {
-							Thread.sleep(10000);
+							Thread.sleep(CHECK_WAIT_TIME);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
 					} else {
 						logger.info("所有服务器运行完毕，用时{}", TimeUtil.format(System.currentTimeMillis() - startTime));
 						if (isShutdown()) {
-							logger.info("关闭TaskRunner");		
-							System.exit(0);
+							exit();
 						} else {
-							logger.info("线程结束, 重新启动TaskRunner");
+							try {
+								logger.info("等待{}，准备重启", TimeUtil.format(WAIT_TIME));
+								Thread.sleep(WAIT_TIME);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							logger.info("重新启动TaskRunner");
 							break;
 						}
 					}

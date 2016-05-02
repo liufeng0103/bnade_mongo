@@ -3,6 +3,9 @@ package com.bnade.wow.client;
 import java.io.IOException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.bnade.util.BnadeProperties;
 import com.bnade.util.HttpClient;
 import com.bnade.wow.client.model.AuctionDataFile;
@@ -18,6 +21,8 @@ import com.google.gson.Gson;
  *
  */
 public class WowClient {
+	
+	private static Logger logger = LoggerFactory.getLogger(WowClient.class);
 		
 	private static final String HOST = "https://api.battlenet.com.cn";
 	private static final String AUCTION_DATA = "/wow/auction/data/";
@@ -39,13 +44,14 @@ public class WowClient {
 	 * @throws WowClientException
 	 * @throws IOException
 	 */
-	public AuctionDataFile getAuctionDataFile(String realmName) throws WowClientException {
+	public AuctionDataFile getAuctionDataFile(String realmName) throws WowClientException {		
 		String url = HOST + AUCTION_DATA + realmName + APIKEY;
 		String json = null;
 		try {
 			httpClient.resetTryCount();
 			 json = httpClient.reliableGet(url);
 		} catch (Exception e) {
+			logger.error(e.getMessage());
 			throw new WowClientException();
 		}		
 		return gson.fromJson(json, AuctionDataFiles.class).getFiles().get(0);
@@ -57,9 +63,9 @@ public class WowClient {
 	 * @return
 	 * @throws IOException
 	 */
-	public List<JAuction> getAuctionData(String url) throws IOException {
+	public List<JAuction> getAuctionData(String url) throws IOException {		
 		httpClient.resetTryCount();
-		String json = httpClient.reliableGet(url);
+		String json = httpClient.reliableGet(url);		
 		return gson.fromJson(json, JAuctions.class).getAuctions();
 	}
 }

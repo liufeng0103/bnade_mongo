@@ -31,7 +31,7 @@ public class AuctionMinBuyoutDailyDataDaoImpl implements AuctionMinBuyoutDailyDa
 	
 	@Override
 	public void save(List<Auction> auctionData, int realmId) {
-		MongoCollection<Document> coll = MongoUtil.getWowDB().getCollection(COLLECTION_NAME_PREFIX + TimeUtil.getDay() + realmId);
+		MongoCollection<Document> coll = MongoUtil.getWowDB().getCollection(COLLECTION_NAME_PREFIX + TimeUtil.getDate() + realmId);
 		checkAndCreateIndex(coll);
 		List<Document> docs = new ArrayList<Document>();
 		for (Auction auc : auctionData) {
@@ -98,5 +98,43 @@ public class AuctionMinBuyoutDailyDataDaoImpl implements AuctionMinBuyoutDailyDa
 		    }
 		});
 		return aucs;
+	}
+
+	@Override
+	public List<Auction> get(String day, int realmId) {
+		MongoCollection<Document> coll = MongoUtil.getWowDB().getCollection(COLLECTION_NAME_PREFIX + day + realmId);
+		FindIterable<Document> iterable = coll.find();
+		List<Auction> aucs = new ArrayList<>();
+		iterable.forEach(new Block<Document>() {
+		    @Override
+		    public void apply(final Document doc) {
+		    	Auction auc = new Auction();
+		    	auc.setAuc(doc.getInteger("auc"));
+		    	auc.setItem(doc.getInteger("item"));
+		    	auc.setOwner(doc.getString("owner"));
+		    	auc.setOwnerRealm(doc.getString("ownerRealm"));
+		    	auc.setBid(doc.getLong("bid"));
+		    	auc.setBuyout(doc.getLong("buyout"));
+		    	auc.setQuantity(doc.getInteger("quantity"));
+		    	auc.setTimeLeft(doc.getString("timeLeft"));
+		    	auc.setRand(doc.getInteger("rand"));
+		    	auc.setSeed(doc.getLong("seed"));
+		    	auc.setPetSpeciesId(doc.getInteger("petSpeciesId"));
+		    	auc.setPetLevel(doc.getInteger("petLevel"));
+		    	auc.setPetBreedId(doc.getInteger("petBreedId"));
+		    	auc.setContext(doc.getInteger("context"));
+		    	auc.setBonusLists(doc.getString("bonusLists"));
+		    	auc.setRealmId(realmId);
+		    	auc.setLastModifed(doc.getLong("lastModifed"));	
+		    	aucs.add(auc);
+		    }
+		});
+		return aucs;
+	}
+
+	@Override
+	public void drop(String day, int realmId) {
+		MongoCollection<Document> coll = MongoUtil.getWowDB().getCollection(COLLECTION_NAME_PREFIX + day + realmId);
+		coll.drop();		
 	}
 }
