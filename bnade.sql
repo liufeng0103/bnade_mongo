@@ -64,3 +64,17 @@ CREATE TABLE IF NOT EXISTS t_pet (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ALTER TABLE t_pet ADD INDEX(name); -- 通过宠物名查询宠物信息
 -- 数据导入使用pets.sql
+
+-- 宠物类型以及属性值
+DROP TABLE IF EXISTS t_pet_stats;
+CREATE TABLE t_pet_stats (
+	speciesId INT UNSIGNED NOT NULL,				-- 宠物id
+	breedId	INT UNSIGNED NOT NULL,					-- 成长类型
+	petQualityId INT UNSIGNED NOT NULL default 3,	-- 品质
+	level	INT UNSIGNED NOT NULL default 25,		-- 等级
+	health INT UNSIGNED NOT NULL,					-- 生命值
+	power	INT UNSIGNED NOT NULL,					-- 攻击力
+	speed INT NOT NULL,								-- 速度
+	PRIMARY KEY(speciesId,breedId)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+-- 数据导入petStats.sql
