@@ -261,8 +261,8 @@ function loadHeatMapChart(container,title,heatMapLabels,heatMapData,minBuyout,se
 function getPastWeek(realmId, realm, itemId, itemName){
 	$('#pastWeekMsg').html("正在查询物品所有历史数据, 请稍等...");
 	$.get("wow/auction/history/realm/" + realmId + "/item/" + itemId, function(data) {
-		if (data.code === 201 || data.code === 404) {
-			$('#pastWeekMsg').html("查询历史数据失败:" + data.errorMessage);					
+		if (data.length === 0) {
+			$('#pastWeekMsg').html("历史数据未找到");					
 			$('#pastWeekCtlDiv').hide();
 		} else {
 			BnadeLocalStorage.addItem(BnadeLocalStorage.lsItems.realm.key, realm);
@@ -271,11 +271,11 @@ function getPastWeek(realmId, realm, itemId, itemName){
 			var chartQuantityData = [];
 			var calData = [];
 			var quantitySum = 0;
-			for (var i in data) {
-				var updated = data[i][0] + 8*60*60*1000;
-				var buyout = Bnade.getGold(data[i][1]);
-				var quantity = data[i][2];					
-				calData[i] = data[i][1];
+			for (var i in data) {				
+				var buyout = Bnade.getGold(data[i][0]);
+				var quantity = data[i][1];
+				var updated = data[i][2] + 8*60*60*1000;
+				calData[i] = data[i][0];
 				chartData[i] = [];
 				chartData[i][0] = updated;
 				chartData[i][1] = buyout;
@@ -412,7 +412,7 @@ function getPastWeek(realmId, realm, itemId, itemName){
 			var weekDays = 0;
 			// 找到一周数据从哪里开始
 			for (var i = data.length-1; i >= 0; i--) {
-				var updated = data[i][0];
+				var updated = data[i][2];
 				var week = new Date(updated - 1).getDay();
 				if (tmpWeek === -1) {
 					tmpWeek = week;
@@ -435,10 +435,10 @@ function getPastWeek(realmId, realm, itemId, itemName){
 			var weekSum = 0;
 			var weekSumQuantity = 0;
 			var weekCount = 1;
-			for (var i = startWeek; i < data.length; i++) {
-				var updated = data[i][0];
-				var buyout = data[i][1];
-				var quantity = data[i][2];					
+			for (var i = startWeek; i < data.length; i++) {				
+				var buyout = data[i][0];
+				var quantity = data[i][1];
+				var updated = data[i][2];
 				var avgMinBuyout = Bnade.getGold(buyout);	
 				var quantity = quantity;
 				if (weekMin ===0 || weekMin > avgMinBuyout) {

@@ -46,36 +46,24 @@ var Bnade = {
 		data.sort(function(a, b) {	
 			return a - b;
 		});
-		var range = 0.8;		
-		var rangeStart = data.length * ((1 - range) / 2);
-		var rangeEnd = data.length*(1 - (1 - range) /2);
-		var min = 0;
-		var max = 0;
-		var avg = 0;
-		var count = 0;
-		var sum = 0;
-		var rangeData = [];
-		for(var i = 0; i < data.length - 1; i++){
-			var value = data[i];
-			if(min === 0 || min > value) {
-				min = value;
+		var range = 0.8;
+		var size = data.length;
+		if (size === 1) {
+			return {"min" : data[0], "max" : data[0], "avg" : data[0]};
+		} else {
+			var maxSize = parseInt(size * range);
+			var tmpPrice = 0;
+			var tmpData = [];
+			for (var i = 0; i < maxSize; i++) {
+				tmpData[i] = data[i];
+				tmpPrice += data[i] / maxSize;
 			}
-			if(i > rangeStart && i < rangeEnd) {				
-				if(max === 0 || max < value) {
-					max = value;
-				}
-				rangeData[count++] = value;
-				sum += value;
-			}
+			var result = {"min" : data[0], "max" : data[maxSize - 1], "avg" : tmpPrice};
+			if (tmpPrice * 3 < data[maxSize - 1]) {
+				result = this.getResult(tmpData);
+			}			
+			return result;
 		}
-		avg = sum / count;
-		var result = {"min" : min, "max" : max, "avg" : avg};
-		if(avg * 2 < max) {
-			result2 = this.getResult(rangeData);
-			result.max = result2.max;
-			result.avg = result2.avg;
-		}
-		return result;
 	}
 };
 var BnadeLocalStorage = {
