@@ -9,4 +9,6 @@ public interface ItemService {
 	
 	List<Item> getItemsByName(String name) throws SQLException;
 	
+	Item getItemById(int id) throws SQLException;
+	
 }

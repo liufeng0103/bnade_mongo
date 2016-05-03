@@ -9,5 +9,7 @@ public interface ItemDao {
 
 	List<Item> getItemsByName(String name) throws SQLException;
 	
+	Item getItemById(int id) throws SQLException;
+	
 	List<String> getBonusList(int itemId) throws SQLException;
 }

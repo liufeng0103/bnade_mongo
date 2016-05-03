@@ -31,4 +31,9 @@ public class AuctionMinBuyoutDataServiceImpl implements AuctionMinBuyoutDataServ
 		return auctionMinBuyoutDataDao.getByItemIdAndBounsList(itemId, bounsList);
 	}
 
+	@Override
+	public List<Auction> getPetsByIdAndBreed(int petId, int breedId) {
+		return auctionMinBuyoutDataDao.getPetsByIdAndBreed(petId, breedId);
+	}
+
 }

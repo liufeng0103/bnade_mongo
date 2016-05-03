@@ -25,4 +25,9 @@ public class ItemServiceImpl implements ItemService {
 		return items;
 	}
 
+	@Override
+	public Item getItemById(int id) throws SQLException {
+		return itemDao.getItemById(id);
+	}
+
 }

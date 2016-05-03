@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 
@@ -27,6 +28,11 @@ public class ItemDaoImpl implements ItemDao {
 	@Override
 	public List<String> getBonusList(int itemId) throws SQLException {		
 		return run.query("select bonusList from t_item_bonus where itemId=?", new ColumnListHandler<String>(), itemId);
+	}
+
+	@Override
+	public Item getItemById(int id) throws SQLException {		
+		return run.query("select id,name,icon,itemLevel from mt_item where id=?", new BeanHandler<Item>(Item.class), id);
 	}
 
 }

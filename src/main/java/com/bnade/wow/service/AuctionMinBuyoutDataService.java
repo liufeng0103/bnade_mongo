@@ -10,5 +10,6 @@ public interface AuctionMinBuyoutDataService {
 	
 	List<Auction> getByItemIdAndBounsList(int itemId, String bounsList);
 	
+	List<Auction> getPetsByIdAndBreed(int petId, int breedId);
 }
  
