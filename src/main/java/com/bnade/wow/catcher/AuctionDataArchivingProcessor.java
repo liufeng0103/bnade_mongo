@@ -58,13 +58,13 @@ public class AuctionDataArchivingProcessor {
 					historyAuction.setPetSpeciesId(auc.getPetSpeciesId());
 					historyAuction.setPetBreedId(auc.getPetBreedId());
 					historyAuction.setBonusLists(auc.getBonusLists());
-					historyAuction.setBuyout(auc.getBuyout()/auc.getQuantity()); // 计算单价
+					historyAuction.setBuyout(auc.getBuyout()); // 计算单价
 					historyAuction.setQuantity(auc.getQuantity());
 					historyAuction.setCount(1);
 					historyAuction.setLastModifed(aucPeriod);
 					aucMap.put(key, historyAuction);
 				} else {
-					tmpAuc.setBuyout(tmpAuc.getBuyout() + auc.getBuyout()/auc.getQuantity()); // 计算单价
+					tmpAuc.setBuyout(tmpAuc.getBuyout() + auc.getBuyout()); // 计算单价
 					tmpAuc.setQuantity(tmpAuc.getQuantity() + auc.getQuantity());
 					tmpAuc.setCount(tmpAuc.getCount() + 1);
 				}
