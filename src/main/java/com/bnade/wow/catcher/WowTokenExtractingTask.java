@@ -116,7 +116,7 @@ class WowTokensJson {
 	public void setCN(WowTokenJson cN) {
 		CN = cN;
 	}
-
+	
 }
 
 class WowTokenJson {

@@ -7,6 +7,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import com.bnade.wow.po.WowToken;
 import com.bnade.wow.service.WowTokenService;
@@ -30,12 +31,12 @@ public class WowTokenResource {
 			List<Object[]> tokenList = new ArrayList<>();
 			for (WowToken token : tokens) {
 				Object[] tokenArray = new Object[2];
-				tokenArray[0] = token.getBuy();
-				tokenArray[1] = token.getUpdated();
+				tokenArray[0] = token.getUpdated();
+				tokenArray[1] = token.getBuy();				
 				tokenList.add(tokenArray);
 			}
 			return tokenList;
 		}
-		return null;
+		return Response.status(404).entity("数据找不到").type(MediaType.TEXT_PLAIN).build();
 	}
 }
