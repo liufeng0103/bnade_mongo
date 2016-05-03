@@ -24,10 +24,15 @@ public class PetServiceImpl implements PetService {
 		}
 		return pets;
 	}
+	
+	@Override
+	public List<Pet> getPetsByName(String name, boolean isFuzzy) throws SQLException {
+		return petDao.getPetsByName(name, isFuzzy);
+	}
 
 	@Override
 	public Pet getPetById(int id) throws SQLException {		
 		return petDao.getPetById(id);
-	}
+	}	
 
 }

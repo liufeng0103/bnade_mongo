@@ -22,7 +22,17 @@ public class PetDaoImpl implements PetDao {
 	
 	@Override
 	public List<Pet> getPetsByName(String name) throws SQLException {
-		return run.query("select id,name,icon from t_pet where name=?", new BeanListHandler<Pet>(Pet.class), name);
+		return getPetsByName(name, false);
+	}
+	
+	@Override
+	public List<Pet> getPetsByName(String name, boolean isFuzzy) throws SQLException {
+		String condition = "=?";
+		if (isFuzzy) {
+			condition = "like ?";
+			name = "%" + name + "%";
+		}
+		return run.query("select id,name,icon from t_pet where name " + condition, new BeanListHandler<Pet>(Pet.class), name);
 	}
 
 	@Override
@@ -33,6 +43,6 @@ public class PetDaoImpl implements PetDao {
 	@Override
 	public Pet getPetById(int id) throws SQLException {
 		return run.query("select id,name,icon from t_pet where id=?", new BeanHandler<Pet>(Pet.class), id);
-	}
+	}	
 
 }

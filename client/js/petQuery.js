@@ -93,26 +93,22 @@ function getItemByAllRealms(id, breed, name) {
 	});
 }
 function fuzzyQueryItems(realm, petName) {
-	$.get('wow/pet/fuzzy/name/' + encodeURIComponent(petName), function(data) {
-		if (data.code === 201) {
-			$('#msg').html("模糊查询失败:" + data.errorMessage);								
-		} else { 
-			if (data.length === 0) {
-				$('#msg').html("找不到物品:" + $("#petName").val());
-			} else {
-				$("#fuzzyItemsList").show();
-				$("#fuzzyItemsList").html("<li class='active'><a href='javascript:void(0)'>物品名</a></li>");					
-				for (var i in data) {
-					var id = "fuzzyItem" + i;						
-					$("#fuzzyItemsList").append("<li><a href='javascript:void(0)' id='" + id + "'>" + data[i] + "</a></li>");
-					$("#" + id).click(function() {
-						$("#petName").val($(this).html());
-						$("#queryBtn").click();
-					});
-				}	
-				$('#msg').html("");
-			}
-		}
+	$.get('wow/pet/name/' + encodeURIComponent(petName) + '?fuzzy=true', function(data) {		
+		if (data.length === 0) {
+			$('#msg').html("找不到物品:" + $("#petName").val());
+		} else {
+			$("#fuzzyItemsList").show();
+			$("#fuzzyItemsList").html("<li class='active'><a href='javascript:void(0)'>物品名</a></li>");					
+			for (var i in data) {
+				var id = "fuzzyItem" + i;						
+				$("#fuzzyItemsList").append("<li><a href='javascript:void(0)' id='" + id + "'>" + data[i] + "</a></li>");
+				$("#" + id).click(function() {
+					$("#petName").val($(this).html());
+					$("#queryBtn").click();
+				});
+			}	
+			$('#msg').html("");
+		}		
 	}).fail(function() {
 		$('#msg').html("查询出错");
     });
