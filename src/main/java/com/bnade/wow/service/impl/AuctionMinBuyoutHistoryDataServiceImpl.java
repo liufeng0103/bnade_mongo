@@ -20,4 +20,9 @@ public class AuctionMinBuyoutHistoryDataServiceImpl implements AuctionMinBuyoutH
 		auctionMinBuyoutHistoryDataDao.save(aucs, realmId, year);		
 	}
 
+	@Override
+	public List<HistoryAuction> get(int itemId, String bounsList, int realmId) {		
+		return auctionMinBuyoutHistoryDataDao.get(itemId, bounsList, realmId, 2016);
+	}
+
 }

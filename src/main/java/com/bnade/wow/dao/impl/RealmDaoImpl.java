@@ -1,9 +1,11 @@
 package com.bnade.wow.dao.impl;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 
 import com.bnade.util.DBUtil;
 import com.bnade.wow.dao.RealmDao;
@@ -35,5 +37,10 @@ public class RealmDaoImpl implements RealmDao {
 		return run.update("update t_realm set url=?,lastModified=?,maxAucId=?,auctionQuantity=?,playerQuantity=?,itemQuantity=?,lastUpdateTime=? where name=?",
 				realm.getUrl(), realm.getLastModified(), realm.getMaxAucId(), realm.getAuctionQuantity(),
 				realm.getPlayerQuantity(), realm.getItemQuantity(), System.currentTimeMillis(), realm.getName());
+	}
+
+	@Override
+	public List<Realm> getAll() throws SQLException {		
+		return run.query("select id,name,url,lastModified,maxAucId,auctionQuantity,playerQuantity,itemQuantity,lastUpdateTime from t_realm", new BeanListHandler<Realm>(Realm.class));
 	}
 }
