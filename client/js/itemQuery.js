@@ -267,6 +267,10 @@ function getPastWeek(realmId, realm, itemId, itemName){
 		} else {
 			BnadeLocalStorage.addItem(BnadeLocalStorage.lsItems.realm.key, realm);
 			$('#pastWeekCtlDiv').show();
+			// 按更新时间排序
+			data.sort(function(a, b){
+				return a[2] - b[2];
+			});
 			var chartData = [];
 			var chartQuantityData = [];
 			var calData = [];
@@ -516,7 +520,7 @@ function getItemByAllRealms(itemId,itemName){
 							realmColumnClass = "class='danger'";									
 						}
 						var buyout=Bnade.getGold(itemArr[1]);						
-						$("#showAllBody").append("<tr "+realmColumnClass+"><td>"+(parseInt(i)+1)+"</td><td>"+realm+"</td><td>"+buyout+"</td><td><a href='/ownerQuery.html?realm="+encodeURIComponent(itemArr[0])+"&owner="+encodeURIComponent(itemArr[2])+"'  target='_blank'>"+itemArr[2]+"</a></td><td>"+leftTimeMap[itemArr[5]]+"</td><td>"+itemArr[3]+"</td><td>"+new Date(itemArr[4]).format("MM-dd hh:mm:ss")+"</td></tr>");
+						$("#showAllBody").append("<tr "+realmColumnClass+"><td>"+(parseInt(i)+1)+"</td><td>"+realm+"</td><td>"+buyout+"</td><td><a href='/ownerQuery.html?realm="+encodeURIComponent(Realm.getNameById(itemArr[0]))+"&owner="+encodeURIComponent(itemArr[2])+"'  target='_blank'>"+itemArr[2]+"</a></td><td>"+leftTimeMap[itemArr[5]]+"</td><td>"+itemArr[3]+"</td><td>"+new Date(itemArr[4]).format("MM-dd hh:mm:ss")+"</td></tr>");
 					}
 				}else{
 					isShowAll=true;
@@ -532,7 +536,7 @@ function getItemByAllRealms(itemId,itemName){
 			var calData=[];
 			var quantitySum=0;
 			for(var i in data){
-				var realm=Bnade.getConnectedRealms(data[i][0]);					
+				var realm=Realm.getConnectedById(data[i][0]);					
 				var buyout=data[i][1];
 				var buyoutOwner=data[i][2];
 				var quantity=data[i][3];

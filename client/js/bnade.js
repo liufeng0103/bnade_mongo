@@ -10,6 +10,15 @@ var Realm = {
 		}
 		return -1;
 	},
+	getNameById : function(id) {
+		for (var i in this.REALMS) {
+			var realm = this.REALMS[i];
+			if (realm.id === id) {
+				return realm.name;
+			}
+		}
+		return "";
+	},
 	getConnectedById : function(id) {
 		for (var i in this.REALMS) {
 			var realm = this.REALMS[i];
