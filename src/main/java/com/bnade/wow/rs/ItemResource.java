@@ -66,18 +66,21 @@ public class ItemResource {
 	 * 物品ID查询物品描述
 	 */
 	@GET
-	@Path("/{id}/html")
-	@Produces(MediaType.TEXT_PLAIN)
-	public Object getItemById(@PathParam("id")int id,  @QueryParam("bl") String bl) {
+	@Path("/{id}")	
+	public Response getItemById(@PathParam("id")int id,  @QueryParam("bl") String bl) {
 		try {
-			String url = "https://www.battlenet.com.cn/wow/zh/item/" + id + "/tooltip";
-			if(bl != null){
-				url+="?u=529&bl=" + bl;
-			}
-			HttpClient client = new HttpClient();
-			client.setGzipSupported(true);
-			String itemHtml = client.get(url);
-			return itemHtml.replaceAll("href=\"[^\"]*\"", "href=\"\"");			
+			if (bl != null) {
+				String url = "https://www.battlenet.com.cn/wow/zh/item/" + id + "/tooltip";
+				if(bl != null){
+					url+="?u=529&bl=" + bl;
+				}
+				HttpClient client = new HttpClient();
+				client.setGzipSupported(true);
+				String itemHtml = client.get(url);				
+				return Response.status(200).entity(itemHtml.replaceAll("href=\"[^\"]*\"", "href=\"\"")).type(MediaType.TEXT_PLAIN).build();
+			} else {				
+				return Response.status(200).entity(itemService.getItemById(id)).type(MediaType.APPLICATION_JSON).build();
+			}					
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(404).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();

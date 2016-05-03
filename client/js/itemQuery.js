@@ -68,9 +68,9 @@ function itemQuery() {
 	}
 }
 function itemQueryById(realm, id) {
-	$.get('wow/item/id2/' + id, function(data) {
+	$.get('wow/item/' + id, function(data) {
 		if (data != null) {
-			accurateQuery(realm, id, data.name);
+			itemQueryByName(realm, data.name);			
 		} else {
 			$('#msg').html("通过ID找不到物品:" + id);
 		}						
@@ -637,7 +637,7 @@ function fuzzyQueryItems(itemName) {
 }
 function loadItemDetail(itemId) {
 	$('#itemDetail').html("");
-	$.get('wow/item/' + itemId + '/html', function(data) {
+	$.get('wow/item/' + itemId, function(data) {
 		if (data.code === 201) {
 			$('#msg').append("物品信息查询失败:" + data.errorMessage);								
 		} else {
