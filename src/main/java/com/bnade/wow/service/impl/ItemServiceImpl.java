@@ -26,6 +26,12 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
+	public List<Item> getItemsByName(String name, boolean isFuzzy)
+			throws SQLException {
+		return itemDao.getItemsByName(name, isFuzzy);
+	}
+	
+	@Override
 	public Item getItemById(int id) throws SQLException {
 		return itemDao.getItemById(id);
 	}

@@ -33,20 +33,29 @@ public class ItemResource {
 	@GET
 	@Path("/name/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Object getItemsByName(@PathParam("name")String name) {
+	public Object getItemsByName(@PathParam("name")String name, @QueryParam("fuzzy") boolean isFuzzy) {
 		try {
-			List<ItemVo> result = new ArrayList<>();
-			List<Item> items = itemService.getItemsByName(name);			
-			for (Item item : items) {
-				ItemVo itemVo = new ItemVo();
-				itemVo.setId(item.getId());
-				itemVo.setName(item.getName());
-				itemVo.setIcon(item.getIcon());
-				itemVo.setItemLevel(item.getItemLevel());
-				itemVo.setBonusList(item.getBonusList());
-				result.add(itemVo);
-			}		
-			return result;	
+			if (isFuzzy) {
+				List<Item> items = itemService.getItemsByName(name, true);
+				List<String> result = new ArrayList<>();
+				for (Item item : items) {
+					result.add(item.getName());
+				}
+				return result;
+			} else {
+				List<ItemVo> result = new ArrayList<>();
+				List<Item> items = itemService.getItemsByName(name);			
+				for (Item item : items) {
+					ItemVo itemVo = new ItemVo();
+					itemVo.setId(item.getId());
+					itemVo.setName(item.getName());
+					itemVo.setIcon(item.getIcon());
+					itemVo.setItemLevel(item.getItemLevel());
+					itemVo.setBonusList(item.getBonusList());
+					result.add(itemVo);
+				}		
+				return result;	
+			}			
 		} catch (SQLException e) {			
 			e.printStackTrace();
 			return Response.status(404).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();

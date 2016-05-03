@@ -615,27 +615,25 @@ function queryByUrl() {
 function fuzzyQueryItems(itemName) {
 	clear();
 	$('#msg').html("正在模糊查询物品信息,请稍等...");
-	$.get('wow/item/fuzzy/name/' + encodeURIComponent(itemName), function(data) {
-		if (data.code === 201) {
-			$('#msg').html("模糊查询失败:" + data.errorMessage);								
+	$.get('wow/item/name/' + encodeURIComponent(itemName) + '?fuzzy=true', function(data) {		
+		if (data.length === 0) {
+			$('#msg').html("找不到物品:" + itemName);
 		} else {
-			if (data.length === 0) {
-				$('#msg').html("找不到物品:" + itemName);
-			} else {
-				$("#fuzzyItemsList").show();
-				$("#fuzzyItemsList").html("<li class='active'><a href='javascript:void(0)'>物品名</a></li>");					
-				for (var i in data) {
-					var id = "fuzzyItem" + i;						
-					$("#fuzzyItemsList").append("<li><a href='javascript:void(0)' id='"+id+"'>"+data[i].name+"</a></li>");
-					$("#" + id).click(function() {
-						$("#itemName").val($(this).html());							
-						$("#queryBtn").click();						
-					});
-				}	
-				$('#msg').html("");
-			}
-		}
-	});
+			$("#fuzzyItemsList").show();
+			$("#fuzzyItemsList").html("<li class='active'><a href='javascript:void(0)'>物品名</a></li>");					
+			for (var i in data) {
+				var id = "fuzzyItem" + i;						
+				$("#fuzzyItemsList").append("<li><a href='javascript:void(0)' id='"+id+"'>"+data[i]+"</a></li>");
+				$("#" + id).click(function() {
+					$("#itemName").val($(this).html());							
+					$("#queryBtn").click();						
+				});
+			}	
+			$('#msg').html("");
+		}		
+	}).fail(function() {
+		$("#msg").html("模糊查询出错");
+    });
 }
 function loadItemDetail(itemId) {
 	$('#itemDetail').html("");

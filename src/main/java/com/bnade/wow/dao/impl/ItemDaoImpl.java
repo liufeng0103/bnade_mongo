@@ -22,7 +22,17 @@ public class ItemDaoImpl implements ItemDao {
 	
 	@Override
 	public List<Item> getItemsByName(String name) throws SQLException {		
-		return run.query("select id,name,icon,itemLevel from mt_item where name=?", new BeanListHandler<Item>(Item.class), name);
+		return getItemsByName(name, false);
+	}
+	
+	@Override
+	public List<Item> getItemsByName(String name, boolean isFuzzy) throws SQLException {
+		String condition = "=?";
+		if (isFuzzy) {
+			condition = "like ?";
+			name = "%" + name + "%";
+		}
+		return run.query("select id,name,icon,itemLevel from mt_item where name " + condition, new BeanListHandler<Item>(Item.class), name);
 	}
 
 	@Override
@@ -33,6 +43,6 @@ public class ItemDaoImpl implements ItemDao {
 	@Override
 	public Item getItemById(int id) throws SQLException {		
 		return run.query("select id,name,icon,itemLevel from mt_item where id=?", new BeanHandler<Item>(Item.class), id);
-	}
+	}	
 
 }

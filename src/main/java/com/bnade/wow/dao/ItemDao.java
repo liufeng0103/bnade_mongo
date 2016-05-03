@@ -9,7 +9,10 @@ public interface ItemDao {
 
 	List<Item> getItemsByName(String name) throws SQLException;
 	
+	List<Item> getItemsByName(String name, boolean isFuzzy) throws SQLException;
+	
 	Item getItemById(int id) throws SQLException;
 	
 	List<String> getBonusList(int itemId) throws SQLException;
+	
 }
