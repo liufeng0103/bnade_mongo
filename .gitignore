@@ -9,3 +9,5 @@ target
 test-output
 *.orig
 log/
+node_modules
+dist
