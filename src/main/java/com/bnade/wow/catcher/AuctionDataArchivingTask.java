@@ -117,6 +117,9 @@ public class AuctionDataArchivingTask {
 	}
 
 	public static void main(String[] args) throws CatcherException, SQLException {
+//		args = new String[2];
+//		args[0] = "斯克提斯";
+//		args[1] = "20160502";
 		logger.info("启动");
 		long start = System.currentTimeMillis();
 		if (args != null && args.length > 1) {
