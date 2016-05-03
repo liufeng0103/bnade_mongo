@@ -109,14 +109,14 @@ public class AuctionDataExtractingTask implements Runnable {
 					// 更新realm状态信息
 					realm.setLastModified(System.currentTimeMillis());
 				} 
+				// 1. 保存所有数据		
+				List<Auction> tmpAucs = new ArrayList<>();
+				copy(auctions, tmpAucs, realm.getId(), realm.getLastModified());
+				addInfo("开始保存{}条拍卖行数据", auctions.size());
+				auctionDataService.save(tmpAucs, realm.getId());
+				addInfo("保存{}条拍卖行数据完毕", auctions.size());
 				auctionDataProcessor.process(auctions);
-				if (auctionDataProcessor.getMaxAucId() != realm.getMaxAucId()) {
-					// 1. 保存所有数据		
-					List<Auction> tmpAucs = new ArrayList<>();
-					copy(auctions, tmpAucs, realm.getId(), realm.getLastModified());
-					addInfo("开始保存{}条拍卖行数据", auctions.size());
-					auctionDataService.save(tmpAucs, realm.getId());
-					addInfo("保存{}条拍卖行数据完毕", auctions.size());
+				if (auctionDataProcessor.getMaxAucId() != realm.getMaxAucId()) {					
 					// 2. 保存所有最低一口价数据
 					List<JAuction> minBuyoutAuctions = auctionDataProcessor.getMinBuyoutAuctions();
 					// 更新服务器拍卖状态信息到t_realm
