@@ -28,11 +28,6 @@ public class AuctionDataServiceImpl implements AuctionDataService {
 	}
 
 	@Override
-	public List<Auction> get(int itemId, String bounsList) {
-		return null;
-	}
-
-	@Override
 	public List<Auction> getByRealmIdAndOwner(int realmId, String owner) {
 		return auctionDataDao.getByRealmIdAndOwner(realmId, owner);
 	}

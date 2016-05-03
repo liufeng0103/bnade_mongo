@@ -12,9 +12,7 @@ import com.bnade.wow.po.Auction;
  */
 public interface AuctionDataService {
 
-	void save(List<Auction> auctionData, int realmId);
-	
-	List<Auction> get(int itemId, String bounsList);
+	void save(List<Auction> auctionData, int realmId);	
 	
 	List<Auction> getByRealmIdAndOwner(int realmId, String owner);
 	
