@@ -65,7 +65,9 @@ public class ItemResource {
 			if(bl != null){
 				url+="?u=529&bl=" + bl;
 			}
-			String itemHtml = new HttpClient().get(url);
+			HttpClient client = new HttpClient();
+			client.setGzipSupported(true);
+			String itemHtml = client.get(url);
 			return itemHtml.replaceAll("href=\"[^\"]*\"", "href=\"\"");			
 		} catch (Exception e) {
 			e.printStackTrace();
