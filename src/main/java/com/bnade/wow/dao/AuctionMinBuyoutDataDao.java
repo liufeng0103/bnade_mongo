@@ -18,4 +18,5 @@ public interface AuctionMinBuyoutDataDao {
 	
 	List<Auction> getByItemIdAndBounsList(int itemId, String bounsList);
 	
+	List<Auction> getPetsByIdAndBreed(int petId, int breedId);
 }
