@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -37,34 +37,45 @@ public class HttpClient {
 	private int connectionTimeout = 10000;
 	// http读取超时时间，单位是毫秒
 	private int readTimeout = 10000;
-	private int try_count = 0;	
+	private int try_count = 0;
+	private boolean isGzipSupported = false;	
 	
+	public void setGzipSupported(boolean isGzipSupported) {
+		this.isGzipSupported = isGzipSupported;
+	}
+
 	/**
 	 * 根据url参数，通过http的get方法获取url的内容
-	 * 
 	 * @param url
 	 * @return
 	 * @throws IOException
-	 * @throws MalformedURLException
 	 */
 	public String get(String url) throws IOException {
 		StringBuffer sb = new StringBuffer();
 		HttpURLConnection con = null;
 		InputStream is = null;
+		BufferedReader reader = null;
 		try {
 			con = (HttpURLConnection) new URL(url).openConnection();
 			con.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
 			con.setConnectTimeout(connectionTimeout);
 			con.setReadTimeout(readTimeout);
-			con.connect();
-			is = con.getInputStream();
-			BufferedReader reader = new BufferedReader(
-					new InputStreamReader(is));
+			if (isGzipSupported) {
+				con.setRequestProperty("Accept-Encoding", "gzip,deflate");
+				logger.debug("接受{}文件", con.getContentEncoding());				
+				is = new GZIPInputStream(con.getInputStream());
+			} else {
+				is = con.getInputStream();
+			}
+			reader = new BufferedReader(new InputStreamReader(is));
 			String line = null;
 			while ((line = reader.readLine()) != null) {
 				sb.append(line);
 			}
 		} finally {
+			if (reader != null) {
+				reader.close();
+			}
 			if (is != null) {
 				is.close();
 			}
@@ -74,7 +85,7 @@ public class HttpClient {
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * 当通过GET方法获取内容失败时，将尝试多次获取内容，如果超过最大尝试次数还是失败将抛出异常
 	 * 调用该方法前最好先调用resetTryCount()方法来重置尝试次数的初始值
@@ -184,4 +195,24 @@ public class HttpClient {
             return;  
         }  
     }  
+    
+    public static void main(String[] args) throws IOException {
+		HttpClient client = new HttpClient();		
+		String url = "http://auction-api-cn.worldofwarcraft.com/auction-data/aaaff45cf244c3cdfecc06db745dcc30/auctions.json";
+		long start = 0;
+		String s = null;
+		start = System.currentTimeMillis();
+		s = client.get(url);
+		System.out.println(System.currentTimeMillis() - start);
+		System.out.println(s.length());
+		client.setGzipSupported(true);
+		start = System.currentTimeMillis();
+		s = client.get(url);
+		System.out.println(System.currentTimeMillis() - start);
+		System.out.println(s.length());
+		start = System.currentTimeMillis();
+		s = client.reliableGet(url);
+		System.out.println(System.currentTimeMillis() - start);
+		System.out.println(s.length());
+	}
 }

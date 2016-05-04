@@ -15,4 +15,7 @@ public interface AuctionDataService {
 	void save(List<Auction> auctionData, int realmId);
 	
 	List<Auction> get(int itemId, String bounsList);
+	
+	List<Auction> getByRealmIdAndOwner(int realmId, String owner);
+	
 }

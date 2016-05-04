@@ -18,4 +18,5 @@ public interface AuctionDataDao {
 	
 	void ensureIndex(int realmId);
 	
+	List<Auction> getByRealmIdAndOwner(int realmId, String owner);
 }

@@ -51,7 +51,6 @@ public class AuctionDataArchivingProcessor {
 			// 保存各时段每种物品的总价格，总数量和总物品数量
 			Map<String, HistoryAuction> aucMap = periodMap.get(aucPeriod);
 			if (aucMap != null) {
-				auc.setLastModifed(aucPeriod);
 				HistoryAuction tmpAuc = aucMap.get(key);
 				if (tmpAuc == null) {
 					HistoryAuction historyAuction = new HistoryAuction();
@@ -59,12 +58,13 @@ public class AuctionDataArchivingProcessor {
 					historyAuction.setPetSpeciesId(auc.getPetSpeciesId());
 					historyAuction.setPetBreedId(auc.getPetBreedId());
 					historyAuction.setBonusLists(auc.getBonusLists());
-					historyAuction.setBuyout(auc.getBuyout());
+					historyAuction.setBuyout(auc.getBuyout()); // 计算单价
 					historyAuction.setQuantity(auc.getQuantity());
 					historyAuction.setCount(1);
+					historyAuction.setLastModifed(aucPeriod);
 					aucMap.put(key, historyAuction);
 				} else {
-					tmpAuc.setBuyout(tmpAuc.getBuyout() + auc.getBuyout());
+					tmpAuc.setBuyout(tmpAuc.getBuyout() + auc.getBuyout()); // 计算单价
 					tmpAuc.setQuantity(tmpAuc.getQuantity() + auc.getQuantity());
 					tmpAuc.setCount(tmpAuc.getCount() + 1);
 				}

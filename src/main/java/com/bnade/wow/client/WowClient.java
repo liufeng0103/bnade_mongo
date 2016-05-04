@@ -34,6 +34,7 @@ public class WowClient {
 	
 	public WowClient() {
 		httpClient = new HttpClient();
+		httpClient.setGzipSupported(true);
 		gson = new Gson();
 	}
 
@@ -47,7 +48,7 @@ public class WowClient {
 	public AuctionDataFile getAuctionDataFile(String realmName) throws WowClientException {		
 		String url = HOST + AUCTION_DATA + realmName + APIKEY;
 		String json = null;
-		try {
+		try {			
 			httpClient.resetTryCount();
 			 json = httpClient.reliableGet(url);
 		} catch (Exception e) {
@@ -63,7 +64,7 @@ public class WowClient {
 	 * @return
 	 * @throws IOException
 	 */
-	public List<JAuction> getAuctionData(String url) throws IOException {		
+	public List<JAuction> getAuctionData(String url) throws IOException {
 		httpClient.resetTryCount();
 		String json = httpClient.reliableGet(url);		
 		return gson.fromJson(json, JAuctions.class).getAuctions();

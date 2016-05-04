@@ -1,6 +1,7 @@
 package com.bnade.wow.service.impl;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import com.bnade.wow.dao.RealmDao;
 import com.bnade.wow.dao.impl.RealmDaoImpl;
@@ -28,6 +29,11 @@ public class RealmServiceImpl implements RealmService {
 	@Override
 	public int update(Realm realm) throws SQLException {		
 		return realmDao.update(realm);
+	}
+
+	@Override
+	public List<Realm> getAll() throws SQLException {
+		return realmDao.getAll();
 	}
 
 }

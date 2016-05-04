@@ -21,4 +21,11 @@ public interface AuctionMinBuyoutHistoryDataDao {
 	 */
 	void save(List<HistoryAuction> aucs, int realmId, int year);
 	
+	/**
+	 * 获取物品在某个服务器的所有历史拍卖数据
+	 * @param realmId
+	 * @return
+	 */
+	List<HistoryAuction> get(int itemId, String bounsList, int realmId, int year);
+	
 }
