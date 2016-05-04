@@ -9,6 +9,7 @@ import java.util.Map;
 import com.bnade.util.TimeUtil;
 import com.bnade.wow.po.Auction;
 import com.bnade.wow.po.HistoryAuction;
+import com.bnade.wow.po.Pet;
 
 public class AuctionDataArchivingProcessor {
 	
@@ -30,6 +31,10 @@ public class AuctionDataArchivingProcessor {
 			}				
 		}
 		for (Auction auc : aucs) {
+			// 不归档宠物价格
+			if (auc.getItem() == Pet.PET_ITEM_ID) {
+				continue;
+			}
 			String key = "" + auc.getItem() + auc.getPetSpeciesId() + auc.getPetBreedId() + auc.getBonusLists();
 			long lastModified = auc.getLastModifed();
 			// 计算数据属于哪个时段
