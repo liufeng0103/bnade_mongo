@@ -27,16 +27,16 @@ import org.slf4j.LoggerFactory;
 public class HttpClient {
 	
 	// 每次重新尝试中间等待时间，单位毫秒
-	private static final long SLEEP_TIME_PER_TRY = 5000;
+	private static final long SLEEP_TIME_PER_TRY = 1000;
 	// 当调用api失败时最多尝试的次数
-	private static final int MAX_TRY_COUNT = 6;
+	private static final int MAX_TRY_COUNT = 5;
 	
 	private static Logger logger = LoggerFactory.getLogger(HttpClient.class);
 	
 	// http连接超时时间，单位是毫秒
-	private int connectionTimeout = 10000;
+	private int connectionTimeout = 5000;
 	// http读取超时时间，单位是毫秒
-	private int readTimeout = 10000;
+	private int readTimeout = 5000;
 	private int try_count = 0;
 	private boolean isGzipSupported = false;	
 	
