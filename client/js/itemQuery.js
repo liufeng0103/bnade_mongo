@@ -623,6 +623,11 @@ function fuzzyQueryItems(itemName) {
 }
 function loadItemDetail(itemId) {
 	$('#itemDetail').html("");
+	if (itemId.toString().indexOf("?") > -1) {
+		itemId += "&tooltip=true";
+	} else {
+		itemId += "?tooltip=true";
+	}
 	$.get('wow/item/' + itemId, function(data) {
 		if (data.code === 201) {
 			$('#msg').append("物品信息查询失败:" + data.errorMessage);								
