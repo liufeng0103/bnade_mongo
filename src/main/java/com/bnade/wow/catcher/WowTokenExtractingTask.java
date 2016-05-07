@@ -2,6 +2,7 @@ package com.bnade.wow.catcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -81,7 +82,7 @@ public class WowTokenExtractingTask {
 			WowToken wowToken = gson.fromJson(tokenJson, WowTokensJson.class).getCN().getRaw();
 			// 通过url获取的时间是秒单位的需要转换成毫秒
 			wowToken.setUpdated(wowToken.getUpdated() * 1000);
-			logger.info("从数据库获取更新时间{}的时光徽章", wowToken.getUpdated());
+			logger.info("从数据库获取更新时间{}的时光徽章", new Date(wowToken.getUpdated()));
 			WowToken dbWowToken = wowTokenService.getByUpdated(wowToken.getUpdated());
 			if (dbWowToken == null) {
 				logger.info("时光徽章不在数据库，添加信息{}", wowToken);
