@@ -36,6 +36,9 @@ public class TaskRunner {
 	// 2次运行直接的等待时间
 	private static final long WAIT_TIME = 1000 * 60;
 	
+	private static final int MAX_API_FAIL_COUNT = 5;
+	private int failCount = 0;
+	
 	private File shutdownFile = new File("shutdown");
 	private File runningFile = new File("running");
 
@@ -58,6 +61,7 @@ public class TaskRunner {
 				if (threadCount > realmNames.size()) {
 					threadCount = realmNames.size();
 				}
+				failCount = 0;
 				ExecutorService pool = Executors.newFixedThreadPool(threadCount);
 				logger.info("启动{}个线程来处理{}个服务器", threadCount, realmNames.size());
 				List<AuctionDataExtractingTask> tasks = new ArrayList<AuctionDataExtractingTask>();
@@ -66,12 +70,20 @@ public class TaskRunner {
 						logger.info("TaskRunner准备关闭,等待未完成的Task运行完毕,停止剩下的服务器运行,总共运行{}个,当前服务器[{}]", i + 1, realmNames.get(i));
 						break;
 					}
-					AuctionDataExtractingTask readyTask = new AuctionDataExtractingTask(realmNames.get(i));
+					AuctionDataExtractingTask readyTask = null;
+					if (failCount >= MAX_API_FAIL_COUNT) {
+						readyTask = new AuctionDataExtractingTask(realmNames.get(i), false);
+					} else {
+						readyTask = new AuctionDataExtractingTask(realmNames.get(i));
+					}
 					while(true) {
 						boolean isTaskAdded = false;
 						if (i >= threadCount) {
 							for (AuctionDataExtractingTask task : tasks) {
 								if (task.isComplete()) {
+									if (!task.isApiAvailable()) {
+										failCount++;
+									}
 									tasks.remove(task);
 									tasks.add(readyTask);
 									pool.execute(readyTask);

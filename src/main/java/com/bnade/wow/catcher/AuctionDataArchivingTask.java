@@ -41,6 +41,7 @@ public class AuctionDataArchivingTask {
 	private static Logger logger = LoggerFactory.getLogger(AuctionDataArchivingTask.class);
 	
 	private File shutdownFile = new File("t2shutdown");
+	private File runningFile = new File("t2running");
 	
 	private String logHeader;
 	private TaskStatusDao taskStatusDao;
@@ -108,6 +109,12 @@ public class AuctionDataArchivingTask {
 		}		
 	}
 	
+	public void finished() {
+		if (runningFile.exists()) {
+			runningFile.deleteOnExit();	
+		}		
+	}
+	
 	private void addInfo(String msg, Object... arguments) {
 		logger.info(logHeader + msg, arguments);
 	}
@@ -127,6 +134,7 @@ public class AuctionDataArchivingTask {
 			String handleDate = args[1];		
 			AuctionDataArchivingTask task = new AuctionDataArchivingTask();
 			task.process(realmName, handleDate);
+			task.finished();
 		} else {
 			AuctionDataArchivingTask task = new AuctionDataArchivingTask();
 			List<String> realmNames = FileUtil.fileLineToList("realmlist.txt");
@@ -139,8 +147,10 @@ public class AuctionDataArchivingTask {
 					logger.info("准备退出，当前运行服务器[{}]", realmName);
 					break;
 				}
-			}			
+			}	
+			task.finished();
 		}	
 		logger.info("运行结束，用时{}", TimeUtil.format(System.currentTimeMillis() - start));
+		
 	}
 }
