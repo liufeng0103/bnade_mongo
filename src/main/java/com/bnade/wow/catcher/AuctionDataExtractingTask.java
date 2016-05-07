@@ -52,6 +52,7 @@ public class AuctionDataExtractingTask implements Runnable {
 
 	private static Logger logger = LoggerFactory.getLogger(AuctionDataExtractingTask.class);
 	
+	private boolean useAPIGetData;
 	private String realmName;
 	private String logHeader;
 	private boolean isComplete;
@@ -61,8 +62,14 @@ public class AuctionDataExtractingTask implements Runnable {
 	private AuctionMinBuyoutDataService auctionMinBuyoutDataService;
 	private AuctionMinBuyoutDailyDataService auctionMinBuyoutDailyDataService;
 	private AuctionDataProcessor auctionDataProcessor;
-	
+	private boolean isApiAvailable = true;
+
 	public AuctionDataExtractingTask(String realmName) {
+		this(realmName, true);
+	}
+	
+	public AuctionDataExtractingTask(String realmName, boolean useAPIGetData) {
+		this.useAPIGetData = useAPIGetData;
 		this.realmName = realmName;
 		logHeader = "服务器[" + realmName + "]";
 		wowClient = new WowClient();
@@ -81,26 +88,38 @@ public class AuctionDataExtractingTask implements Runnable {
 		if (realm != null) {
 			long interval = BnadeProperties.getTask1Interval();
 			if (System.currentTimeMillis() - realm.getLastModified() > interval) {
-				List<JAuction> auctions = null;
-				try {
-					addInfo("通过api获取拍卖行数据文件信息");
-					AuctionDataFile auctionDataFile = wowClient.getAuctionDataFile(realmName);
-					addInfo("拍卖行数据文件信息获取完毕");
-					if (auctionDataFile.getLastModified() != realm.getLastModified()) {
-						addInfo("2次更新间隔{}", TimeUtil.format(auctionDataFile.getLastModified() - realm.getLastModified()));
-						addInfo("开始下载拍卖行数据");
+				List<JAuction> auctions = null;	
+				if (useAPIGetData) {
+					try {
+						addInfo("通过api获取拍卖行数据文件信息");
+						AuctionDataFile auctionDataFile = wowClient.getAuctionDataFile(realmName);
+						addInfo("拍卖行数据文件信息获取完毕");
+						if (auctionDataFile.getLastModified() != realm.getLastModified()) {
+							addInfo("2次更新间隔{}", TimeUtil.format(auctionDataFile.getLastModified() - realm.getLastModified()));
+							addInfo("开始下载拍卖行数据");
+							long start = System.currentTimeMillis();
+							auctions = wowClient.getAuctionData(auctionDataFile.getUrl());
+							addInfo("拍卖行数据下载完毕,共{}条数据用时{}", auctions.size(), TimeUtil.format(System.currentTimeMillis() - start));
+							// 更新realm状态信息
+							realm.setUrl(auctionDataFile.getUrl());
+							realm.setLastModified(auctionDataFile.getLastModified());
+						} else {
+							addInfo("数据更新时间{}与api获取的更新时间一样，不更新", new Date(realm.getLastModified()));
+							return;
+						}
+					} catch (WowClientException e) {
+						isApiAvailable = false;
+						addInfo("获取拍卖行数据文件信息api不好用，使用数据库中的url下载数据文件");
 						long start = System.currentTimeMillis();
-						auctions = wowClient.getAuctionData(auctionDataFile.getUrl());
+						addInfo("2次更新间隔{}", TimeUtil.format(start - realm.getLastModified()));
+						addInfo("开始下载拍卖行数据");					
+						auctions = wowClient.getAuctionData(realm.getUrl());
 						addInfo("拍卖行数据下载完毕,共{}条数据用时{}", auctions.size(), TimeUtil.format(System.currentTimeMillis() - start));
 						// 更新realm状态信息
-						realm.setUrl(auctionDataFile.getUrl());
-						realm.setLastModified(auctionDataFile.getLastModified());
-					} else {
-						addInfo("数据更新时间{}与api获取的更新时间一样，不更新", new Date(realm.getLastModified()));
-						return;
-					}
-				} catch (WowClientException e) {
-					addInfo("获取拍卖行数据文件信息api不好用，使用数据库中的url下载数据文件");
+						realm.setLastModified(System.currentTimeMillis());
+					} 	
+				} else {
+					addInfo("直接使用url下载数据");
 					long start = System.currentTimeMillis();
 					addInfo("2次更新间隔{}", TimeUtil.format(start - realm.getLastModified()));
 					addInfo("开始下载拍卖行数据");					
@@ -108,7 +127,8 @@ public class AuctionDataExtractingTask implements Runnable {
 					addInfo("拍卖行数据下载完毕,共{}条数据用时{}", auctions.size(), TimeUtil.format(System.currentTimeMillis() - start));
 					// 更新realm状态信息
 					realm.setLastModified(System.currentTimeMillis());
-				} 
+				}
+							
 				// 1. 保存所有数据		
 				List<Auction> tmpAucs = new ArrayList<>();
 				copy(auctions, tmpAucs, realm.getId(), realm.getLastModified());
@@ -147,15 +167,16 @@ public class AuctionDataExtractingTask implements Runnable {
 
 	@Override
 	public void run() {
-		try {
-			long start = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
+		try {			
 			addInfo("开始");
 			process();
-			isComplete = true;
-			addInfo("完成，用时：" + TimeUtil.format(System.currentTimeMillis() - start));
 		} catch (CatcherException | IOException | SQLException e) {
 			addError("运行出错：" + e.getMessage());
 			e.printStackTrace();
+		} finally {
+			isComplete = true;
+			addInfo("完成，用时：" + TimeUtil.format(System.currentTimeMillis() - start));
 		}
 	}
 
@@ -201,6 +222,10 @@ public class AuctionDataExtractingTask implements Runnable {
 
 	public String getRealmName() {
 		return realmName;
+	}	
+	
+	public boolean isApiAvailable() {
+		return isApiAvailable;
 	}
 
 	public static void main(String[] args) throws Exception {
