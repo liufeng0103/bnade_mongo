@@ -67,9 +67,9 @@ public class ItemResource {
 	 */
 	@GET
 	@Path("/{id}")	
-	public Response getItemById(@PathParam("id")int id,  @QueryParam("bl") String bl) {
+	public Response getItemById(@PathParam("id")int id,  @QueryParam("bl") String bl,  @QueryParam("tooltip") boolean tooltip) {
 		try {
-			if (bl != null) {
+			if (tooltip) {
 				String url = "https://www.battlenet.com.cn/wow/zh/item/" + id + "/tooltip";
 				if(bl != null){
 					url+="?u=529&bl=" + bl;
